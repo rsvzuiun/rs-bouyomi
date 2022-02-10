@@ -28,7 +28,8 @@ import pcap
 from _filter import FILTERS
 
 RS_PORTS = [54631, 54632, 54633, 56621]
-DEBUG = False
+
+config = {'DEBUG': False}
 
 def choice_interface() -> str:
     """生きてるインターフェイスを選ぶ"""
@@ -67,7 +68,7 @@ def callback(data: bytes):
             f.action(m)
             break
     else:
-        if DEBUG:
+        if config['DEBUG']:
             print(data)
             print(repr(data.decode('cp932', 'ignore')))
             print(dump(data))
@@ -85,6 +86,6 @@ def main():
         callback(payload)
 
 if __name__ == '__main__':
-    if len(argv) >= 2 and argv == 'debug':
-        DEBUG = True
+    if len(argv) >= 2 and argv[1] == 'debug':
+        config['DEBUG'] = True
     main()
