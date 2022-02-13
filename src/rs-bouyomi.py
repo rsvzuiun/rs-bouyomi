@@ -80,7 +80,10 @@ def main():
 
     for ts, buf in sniffer:
         eth = dpkt.ethernet.Ethernet(buf)
-        payload: bytes = eth.ip.tcp.data # type: ignore
+        try:
+            payload: bytes = eth.ip.tcp.data # type: ignore
+        except AttributeError as e:
+            continue # drop ipv6
         if not payload: continue
 
         callback(payload)
