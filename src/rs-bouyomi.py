@@ -18,6 +18,7 @@
 
 import csv
 import re
+import socket
 import subprocess
 from sys import argv
 
@@ -75,8 +76,10 @@ def callback(data: bytes):
             print('-'*79)
 
 def main():
+    host = socket.gethostbyname(socket.gethostname())
     sniffer = pcap.pcap(name=choice_interface(), promisc=True, timeout_ms=100)
-    sniffer.setfilter(f'tcp and ({" || ".join(f"port {p}" for p in RS_PORTS)})')
+    sniffer.setfilter(f'tcp and ({" || ".join(f"port {p}" for p in RS_PORTS)}) and \
+        host {host}')
 
     for ts, buf in sniffer:
         eth = dpkt.ethernet.Ethernet(buf)
