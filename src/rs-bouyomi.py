@@ -64,11 +64,24 @@ def dump(buf: bytes) -> str:
 def callback(data: bytes):
     for f in FILTERS:
         if m := re.search(f.regex, data):
-            # print(f.name, data)
+            # if f.name != "NOP":
+            #     print(f.name, data)
             f.action(m)
             break
     else:
         if config["DEBUG"]:
+            if data[0:2] in (
+                b"\x0c\x00",
+                b"\x0e\x00",
+                b"\x14\x00",
+                b"\x1a\x00",
+                b"\x1c\x00",
+                b"\x1e\x00",
+                b"\x5a\x00",
+                b"\x8e\x00",
+                b"\x9c\x00",
+            ):
+                return
             print(data)
             print(repr(data.decode("cp932", "ignore")))
             print(dump(data))

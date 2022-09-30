@@ -27,7 +27,7 @@ class FilterMeta(type):
 
 class Nop(FilterMeta):
     name = "NOP"
-    regex = rb"\x1E\x00\x09\x70\x00\x00"
+    regex = rb"^\x1E\x00\x09\x70\x00\x00"
 
     @classmethod
     def action(cls, m: re.Match[bytes]):
@@ -36,7 +36,7 @@ class Nop(FilterMeta):
 
 class Nop2(FilterMeta):
     name = "NOP"
-    regex = rb"\x06\x00\x00\x10\x00\x00"
+    regex = rb"^\x06\x00\x00\x10\x00\x00"
 
     @classmethod
     def action(cls, m: re.Match[bytes]):
@@ -65,7 +65,7 @@ class GuildChat(FilterMeta):
 
 class ShoutChat(FilterMeta):
     name = "SHOUT"
-    regex = rb"\x00\x58\x11\xCC\xCC.\xC8\x0c\x81([^\x00]+)\x00+([^\x00]+)"
+    regex = rb"\x00\x58\x11\xCC\xCC..\x0c\x81([^\x00]+)\x00+([^\x00]+)"
     talk = False
     talk_prefix = "エコー)"
 
