@@ -30,19 +30,18 @@ from _filter import FILTERS
 
 RS_PORTS = [54631, 54632, 54633, 56621]
 
-config = {'DEBUG': False}
+config = {"DEBUG": False}
+
 
 def choice_interface() -> str:
     """生きてるインターフェイスを選ぶ"""
-    rows = ((ret := subprocess.check_output('getmac /V /FO CSV'))
-            .decode(chardet.detect(ret)['encoding'])
-            .splitlines()
-    )
+    rows = (ret := subprocess.check_output("getmac /V /FO CSV")).decode(chardet.detect(ret)["encoding"]).splitlines()
 
     table = []
     for i, row in enumerate(csv.reader(rows)):
-        if i == 0: continue
-        if m := re.search(r'\{.*\}', row[3]):
+        if i == 0:
+            continue
+        if m := re.search(r"\{.*\}", row[3]):
             table.append((row[0], row[1], m[0]))
 
     if len(table) == 1:
@@ -51,47 +50,52 @@ def choice_interface() -> str:
     for i, row in enumerate(table):
         print(i, row[0], row[1], row[2])
 
-    choice = int(input('? '))
+    choice = int(input("? "))
     return table[choice][2]
+
 
 def dump(buf: bytes) -> str:
     nwrap = 32
-    return '\n'.join(
-        ' '.join(
-            map(lambda a: f'{a:02X}',
-                buf[nwrap*i:nwrap*i+nwrap])
-            ) for i in range(len(buf)//nwrap + 1)
-        )
+    return "\n".join(
+        " ".join(map(lambda a: f"{a:02X}", buf[nwrap * i : nwrap * i + nwrap])) for i in range(len(buf) // nwrap + 1)
+    )
+
 
 def callback(data: bytes):
     for f in FILTERS:
         if m := re.search(f.regex, data):
+            # print(f.name, data)
             f.action(m)
             break
     else:
-        if config['DEBUG']:
+        if config["DEBUG"]:
             print(data)
-            print(repr(data.decode('cp932', 'ignore')))
+            print(repr(data.decode("cp932", "ignore")))
             print(dump(data))
-            print('-'*79)
+            print("-" * 79)
+
 
 def main():
     host = socket.gethostbyname(socket.gethostname())
     sniffer = pcap.pcap(name=choice_interface(), promisc=True, timeout_ms=100)
-    sniffer.setfilter(f'tcp and ({" || ".join(f"port {p}" for p in RS_PORTS)}) and \
-        host {host}')
+    sniffer.setfilter(
+        f'tcp and ({" || ".join(f"port {p}" for p in RS_PORTS)}) and \
+        host {host}'
+    )
 
     for ts, buf in sniffer:
         eth = dpkt.ethernet.Ethernet(buf)
         try:
-            payload: bytes = eth.ip.tcp.data # type: ignore
+            payload: bytes = eth.ip.tcp.data  # type: ignore
         except AttributeError as e:
-            continue # drop ipv6
-        if not payload: continue
+            continue  # drop ipv6
+        if not payload:
+            continue
 
         callback(payload)
 
-if __name__ == '__main__':
-    if len(argv) >= 2 and argv[1] == 'debug':
-        config['DEBUG'] = True
+
+if __name__ == "__main__":
+    if len(argv) >= 2 and argv[1] == "debug":
+        config["DEBUG"] = True
     main()
